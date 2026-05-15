@@ -1,0 +1,101 @@
+/* ===== STUDYFLOW — PLAYER.CSS ===== */
+
+.player-container {
+  display: flex;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+  min-height: calc(100vh - 120px);
+}
+
+/* ===== VIDEO SECTION ===== */
+.video-section { flex: 1.6; }
+
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px var(--glass-border);
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-info {
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  backdrop-filter: blur(12px);
+}
+
+.video-info h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ===== AI PANEL ===== */
+.ai-panel {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 22px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: sticky;
+  top: 120px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+/* Panel glow accent */
+.ai-panel::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), var(--accent), transparent);
+  border-radius: 2px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 960px) {
+  .player-container {
+    flex-direction: column;
+    padding: 0 16px 32px;
+  }
+  .video-section, .ai-panel { flex: auto; }
+  .ai-panel {
+    position: static;
+    max-height: none;
+  }
+  .qa-box { flex-direction: column; }
+  .primary-btn.small { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .player-container { padding: 0 12px 24px; }
+  .video-info { padding: 12px 14px; }
+  .video-info h2 { font-size: 15px; }
+}

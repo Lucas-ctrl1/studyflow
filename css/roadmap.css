@@ -1,0 +1,180 @@
+/* ===== STUDYFLOW — ROADMAP.CSS ===== */
+
+.roadmap-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+}
+
+.roadmap-header {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 48px 40px;
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  border-radius: 32px;
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.roadmap-header::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), var(--accent), var(--aurora3), transparent);
+}
+
+.roadmap-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 200px;
+  background: radial-gradient(ellipse, rgba(124,106,247,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.roadmap-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--text), var(--primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.roadmap-header p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.roadmap-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== ROADMAP STEPS ===== */
+.roadmap-step {
+  background: var(--card);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 24px 28px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.4s ease both;
+}
+
+.roadmap-step:hover {
+  border-color: rgba(124,106,247,0.3);
+  transform: translateX(8px);
+  box-shadow: 0 8px 32px rgba(124,106,247,0.15);
+}
+
+.roadmap-step::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--primary), var(--accent));
+  border-radius: 0 2px 2px 0;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: white;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px var(--primary-glow);
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.step-body {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding-left: 50px;
+}
+
+/* Status badges */
+.step-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+.step-status.done {
+  background: rgba(0,212,200,0.12);
+  color: var(--accent);
+  border: 1px solid rgba(0,212,200,0.3);
+}
+
+.step-status.next {
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid rgba(124,106,247,0.3);
+}
+
+.step-status.locked {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Animation delay for roadmap items */
+.roadmap-step:nth-child(1) { animation-delay: 0.05s; }
+.roadmap-step:nth-child(2) { animation-delay: 0.1s; }
+.roadmap-step:nth-child(3) { animation-delay: 0.15s; }
+.roadmap-step:nth-child(4) { animation-delay: 0.2s; }
+.roadmap-step:nth-child(5) { animation-delay: 0.25s; }
+.roadmap-step:nth-child(6) { animation-delay: 0.3s; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .roadmap-container { padding: 0 16px 40px; }
+  .roadmap-header { padding: 32px 24px; }
+  .roadmap-header h1 { font-size: 22px; }
+  .roadmap-step { padding: 18px 20px; }
+  .step-body { padding-left: 0; margin-top: 8px; }
+}
