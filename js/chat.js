@@ -150,25 +150,15 @@ function hideTypingIndicator() {
 
 // Call Gemini API
 async function callGemini(prompt) {
-    
-    const GEMINI_API_KEY = window.CONFIG?.GEMINI_API_KEY || '';
-    const MODEL_NAME = 'models/gemini-2.5-flash-lite';
-    
     try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt.substring(0, 8000) }]
-                    }]
-                })
-            }
-        );
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, model: 'models/gemini-2.5-flash-lite' })
+        });
         
         const data = await response.json();
+        if (data.error) return `⚠️ Error: ${data.error.message}`;
         if (data.error) return `⚠️ Error: ${data.error.message}`;
         return data.candidates[0].content.parts[0].text;
     } catch (err) {
