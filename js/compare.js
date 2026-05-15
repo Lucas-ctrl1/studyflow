@@ -147,7 +147,9 @@ function formatAnalysis(text) {
 }
 
 async function callGemini(prompt) {
-    const GEMINI_API_KEY = window.CONFIG?.GEMINI_API_KEY || 'AIzaSyC8oS6Hqx537nANhWKkGNXnCeFlHSv01kM';
+    
+    const GEMINI_API_KEY = window.CONFIG?.GEMINI_API_KEY || '';
+
     const MODEL_NAME = 'models/gemini-2.5-flash-lite';
     
     try {
