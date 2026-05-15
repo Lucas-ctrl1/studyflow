@@ -10,27 +10,18 @@ function getApiKey() {
 
 // Call Gemini API
 async function callGemini(prompt) {
-    const trimmedPrompt = prompt.length > 8000 ? prompt.substring(0, 8000) : prompt;
-    
     try {
         const response = await fetch('/api/gemini', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: trimmedPrompt, model: 'models/gemini-2.5-flash-lite' })
+            body: JSON.stringify({ prompt, model: 'models/gemini-2.5-flash-lite' })
         });
         
         const data = await response.json();
-        
-        if (data.error) {
-            console.error('Gemini error:', data.error);
-            if (data.error.code === 429) return '⚠️ Rate limit. Please wait.';
-            if (data.error.code === 403) return '⚠️ API key issue. Check configuration.';
-            return `⚠️ ${data.error.message}`;
-        }
-        
+        if (data.error) return `⚠️ Error: ${data.error.message}`;
+        if (data.error) return `⚠️ Error: ${data.error.message}`;
         return data.candidates[0].content.parts[0].text;
     } catch (err) {
-        console.error('Network error:', err);
         return `⚠️ Network error: ${err.message}`;
     }
 }
