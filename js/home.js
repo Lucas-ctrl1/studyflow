@@ -2,7 +2,6 @@
 let currentRegion = 'US';
 let watchHistory = JSON.parse(localStorage.getItem('watchHistory') || '[]');
 let savedSummaries = JSON.parse(localStorage.getItem('savedSummaries') || '[]');
-let youtubeKey = CONFIG.YOUTUBE_API_KEY;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadTrending('US');
@@ -18,8 +17,6 @@ function updateStats() {
 
     if (videoCount) videoCount.textContent = watchHistory.length;
     if (summaryCount) summaryCount.textContent = savedSummaries.length;
-
-    // Real quiz average from app.js
     if (quizScore && typeof getQuizAverage === 'function') {
         const avg = getQuizAverage();
         quizScore.textContent = avg > 0 ? avg + '%' : '—';
@@ -75,7 +72,6 @@ function initHomeEvents() {
     });
 }
 
-// ===== OPEN VIDEO =====
 function openVideo(videoId, videoTitle) {
     watchHistory = watchHistory.filter(v => v.id !== videoId);
     watchHistory.unshift({
@@ -93,7 +89,6 @@ function openVideo(videoId, videoTitle) {
     window.location.href = 'player.html';
 }
 
-// ===== DIRECT LINK =====
 function extractVideoId(url) {
     const patterns = [
         /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&?#]+)/,
@@ -115,7 +110,7 @@ async function handleDirectLink() {
     if (!videoId) { showToast('❌ Invalid YouTube link'); return; }
     showToast('📥 Processing video...');
     try {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${youtubeKey}`);
+        const response = await fetch(`${window.CONFIG.PROXY_YOUTUBE}?endpoint=videos&params=part=snippet&id=${videoId}`);
         const data = await response.json();
         if (data.error || !data.items || !data.items.length) { showToast('❌ Video not found or private'); return; }
         const videoTitle = data.items[0].snippet.title;
@@ -125,7 +120,6 @@ async function handleDirectLink() {
     } catch (err) { showToast('❌ Error fetching video'); }
 }
 
-// ===== FILTER BY CATEGORY =====
 async function filterByCategory(category) {
     const grid = document.getElementById('videoGrid');
     if (!grid) return;
@@ -142,7 +136,7 @@ async function filterByCategory(category) {
     if (!query) return loadTrending(currentRegion);
 
     try {
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=12&q=${encodeURIComponent(query)}&type=video&key=${youtubeKey}`;
+        const url = `${window.CONFIG.PROXY_YOUTUBE}?endpoint=search&params=part=snippet&maxResults=12&q=${encodeURIComponent(query)}&type=video`;
         const res = await fetch(url);
         const data = await res.json();
         if (data.error) throw new Error(data.error.message);
@@ -158,14 +152,13 @@ async function filterByCategory(category) {
     }
 }
 
-// ===== TRENDING VIDEOS =====
 async function loadTrending(region) {
     const grid = document.getElementById('videoGrid');
     if (!grid) return;
     if (window.showSkeletons) showSkeletons('videoGrid', 8);
 
     try {
-        const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=12&regionCode=${region}&key=${youtubeKey}`;
+        const url = `${window.CONFIG.PROXY_YOUTUBE}?endpoint=videos&params=part=snippet&chart=mostPopular&maxResults=12&regionCode=${region}`;
         const res = await fetch(url);
         const data = await res.json();
         if (data.error) throw new Error(data.error.message);
@@ -180,7 +173,6 @@ async function loadTrending(region) {
     }
 }
 
-// ===== SEARCH VIDEOS =====
 async function searchVideos() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) return loadTrending(currentRegion);
@@ -189,7 +181,7 @@ async function searchVideos() {
     if (window.showSkeletons) showSkeletons('videoGrid', 8);
 
     try {
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=12&q=${encodeURIComponent(query)}&type=video&key=${youtubeKey}`;
+        const url = `${window.CONFIG.PROXY_YOUTUBE}?endpoint=search&params=part=snippet&maxResults=12&q=${encodeURIComponent(query)}&type=video`;
         const res = await fetch(url);
         const data = await res.json();
         if (data.error) throw new Error(data.error.message);
@@ -205,7 +197,6 @@ async function searchVideos() {
     }
 }
 
-// ===== RENDER VIDEO CARDS (with progress bars) =====
 function renderVideoCards(grid, videos) {
     grid.innerHTML = videos.map(v => `
         <div class="video-card" data-id="${v.id}" data-title="${escapeHtml(v.title)}" style="position:relative;">
@@ -221,11 +212,9 @@ function renderVideoCards(grid, videos) {
         card.addEventListener('click', () => openVideo(card.dataset.id, card.dataset.title));
     });
 
-    // Inject progress bars after render
     if (window.injectProgressBars) injectProgressBars();
 }
 
-// ===== RECENT VIDEOS =====
 function updateRecentVideos() {
     const container = document.getElementById('recentList');
     if (!container) return;
@@ -247,7 +236,6 @@ function updateRecentVideos() {
     });
 }
 
-// ===== CONTINUE WATCHING =====
 function continueWatching() {
     if (watchHistory.length) {
         const last = watchHistory[0];
@@ -257,7 +245,6 @@ function continueWatching() {
     }
 }
 
-// ===== VOICE SEARCH =====
 function startVoiceSearch() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         showToast('Voice not supported on this browser');
@@ -286,7 +273,6 @@ function startVoiceSearch() {
     };
 }
 
-// ===== UTILITIES =====
 function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) return;
