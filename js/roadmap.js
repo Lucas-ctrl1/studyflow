@@ -5,7 +5,7 @@ function getApiKey() {
     if (typeof CONFIG !== 'undefined' && CONFIG.GEMINI_API_KEY) {
         return CONFIG.GEMINI_API_KEY;
     }
-    return process.env.GEMINI_API_KEY || ''; // Fallback
+    return window.CONFIG?.GEMINI_API_KEY || ''; // Fallback
 }
 
 // Call Gemini API
