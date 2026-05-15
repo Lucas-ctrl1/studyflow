@@ -10,35 +10,21 @@ function getApiKey() {
 
 // Call Gemini API
 async function callGemini(prompt) {
-    const API_KEY = getApiKey();
-    const MODEL_NAME = 'models/gemini-2.5-flash-lite';
-    
     const trimmedPrompt = prompt.length > 8000 ? prompt.substring(0, 8000) : prompt;
     
     try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/${MODEL_NAME}:generateContent?key=${API_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: trimmedPrompt }]
-                    }]
-                })
-            }
-        );
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: trimmedPrompt, model: 'models/gemini-2.5-flash-lite' })
+        });
         
         const data = await response.json();
         
         if (data.error) {
             console.error('Gemini error:', data.error);
-            if (data.error.code === 429) {
-                return '⚠️ Rate limit. Please wait a moment and try again.';
-            }
-            if (data.error.code === 403) {
-                return '⚠️ API key issue. Please check your configuration.';
-            }
+            if (data.error.code === 429) return '⚠️ Rate limit. Please wait.';
+            if (data.error.code === 403) return '⚠️ API key issue. Check configuration.';
             return `⚠️ ${data.error.message}`;
         }
         
