@@ -1,9 +1,9 @@
 // ===== API CONFIGURATION =====
-// These keys are injected by Vercel during build
-// The actual values come from Environment Variables
+// All API keys are now stored as Vercel Environment Variables
+// The frontend calls our proxy endpoints instead of Google directly
 const CONFIG = {
-    YOUTUBE_API_KEY: window.YOUTUBE_API_KEY || '',
-    GEMINI_API_KEY: window.GEMINI_API_KEY || ''
+    PROXY_YOUTUBE: '/api/youtube',
+    PROXY_GEMINI: '/api/gemini'
 };
 
 window.CONFIG = CONFIG;
