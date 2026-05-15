@@ -1,15 +1,13 @@
-// ===== COMPLETE PLAYER.JS - WITH DARK MODE =====
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+// ===== COMPLETE PLAYER.JS - WITH PROXY =====
 const MODEL_NAME = 'models/gemini-2.5-flash-lite';
 
 let currentVideoId = '';
 let currentVideoTitle = '';
 
-// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     loadVideo();
     initPlayerEvents();
-    initDarkMode();  // ✅ ADD THIS
+    initDarkMode();
 });
 
 function loadVideo() {
@@ -19,8 +17,6 @@ function loadVideo() {
     if (currentVideoId) {
         document.getElementById('videoFrame').src = `https://www.youtube.com/embed/${currentVideoId}?enablejsapi=1`;
         document.getElementById('videoTitle').textContent = currentVideoTitle || 'Video';
-        
-        // Load saved summary if exists
         loadSavedSummary(currentVideoId);
     } else {
         document.getElementById('videoTitle').textContent = 'No video selected';
@@ -65,7 +61,6 @@ function initPlayerEvents() {
     });
 }
 
-// ===== DARK MODE FUNCTION =====
 function initDarkMode() {
     const themeBtn = document.getElementById('darkModeToggle');
     if (!themeBtn) return;
@@ -80,55 +75,28 @@ function initDarkMode() {
         const isDark = document.body.classList.contains('dark');
         localStorage.setItem('darkMode', isDark);
         themeBtn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
-        
-        // Force redraw of knowledge web if exists
-        if (typeof updateKnowledgeWeb === 'function') {
-            setTimeout(updateKnowledgeWeb, 50);
-        }
     });
 }
 
-// ===== GEMINI API CALL =====
-async function callGemini(prompt) {
-    const trimmedPrompt = prompt.length > 8000 ? prompt.substring(0, 8000) : prompt;
-    
+async function callGeminiProxy(prompt) {
     try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: trimmedPrompt }]
-                    }]
-                })
-            }
-        );
-        
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, model: MODEL_NAME })
+        });
         const data = await response.json();
-        
-        if (data.error) {
-            console.error('Gemini error:', data.error);
-            if (data.error.code === 429) {
-                return '⏳ Rate limit. Wait 10 seconds.';
-            }
-            return `⚠️ ${data.error.message}`;
-        }
-        
+        if (data.error) return `⚠️ ${data.error.message}`;
+        if (data.error) return `⚠️ ${data.error.message}`;
         return data.candidates[0].content.parts[0].text;
     } catch (err) {
-        console.error('Network error:', err);
         return `⚠️ Network error: ${err.message}`;
     }
 }
 
-// ===== GET VIDEO DETAILS =====
 async function getVideoDetails(videoId) {
-    const YOUTUBE_KEY = 'AIzaSyBbc6gPuVxD5NVFYUc3fxFEOeSwgLUGqAg';
-    
     try {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${YOUTUBE_KEY}`);
+        const response = await fetch(`${window.CONFIG.PROXY_YOUTUBE}?endpoint=videos&params=part=snippet,contentDetails&id=${videoId}`);
         const data = await response.json();
         
         if (data.items && data.items[0]) {
@@ -143,7 +111,6 @@ async function getVideoDetails(videoId) {
     } catch (err) {
         console.error('Error:', err);
     }
-    
     return { title: currentVideoTitle, channel: '', description: '', duration: 0 };
 }
 
@@ -155,7 +122,6 @@ function parseDuration(duration) {
     return hours * 60 + minutes;
 }
 
-// ===== GET TRANSCRIPT =====
 async function getTranscript(videoId) {
     try {
         const response = await fetch(`https://yewtu.be/api/v1/captions/${videoId}`);
@@ -189,11 +155,9 @@ function parseVTT(vttText) {
             textLines.push(line.trim());
         }
     }
-    
     return textLines.join(' ').substring(0, 6000);
 }
 
-// ===== AUTO-SAVE SUMMARY =====
 function autoSaveSummary(summaryText, videoId, videoTitle) {
     if (!summaryText || summaryText.includes('Generating') || summaryText.includes('Getting') || summaryText.includes('⚠️')) {
         return;
@@ -219,7 +183,6 @@ function autoSaveSummary(summaryText, videoId, videoTitle) {
     localStorage.setItem('savedSummaries', JSON.stringify(saved));
 }
 
-// ===== GENERATE SUMMARY =====
 async function generateSummary() {
     if (!currentVideoId) { showToast('No video loaded'); return; }
     
@@ -259,15 +222,11 @@ Use 5-7 bullet points with •. Use **bold** for key terms.`;
     }
     
     output.innerHTML = '<div class="loader-small"></div><p style="text-align:center">Analyzing...</p>';
-    
-    const result = await callGemini(prompt);
+    const result = await callGeminiProxy(prompt);
     output.innerHTML = formatOutput(result);
-    
-    // Auto-save to library
     autoSaveSummary(result, currentVideoId, currentVideoTitle);
 }
 
-// ===== Q&A =====
 async function askQuestion() {
     const question = document.getElementById('questionInput').value.trim();
     if (!question) { showToast('Enter a question'); return; }
@@ -291,7 +250,6 @@ Question: "${question}"
 Instructions:
 - Answer the question clearly and educationally
 - ALWAYS include relevant timestamps in format [MM:SS] wherever applicable
-- If the user asks about a specific time, focus your answer on that section
 - Use **bold** for key terms
 - Format timestamps like: at [1:24] or see [3:45]`;
     } else {
@@ -300,15 +258,14 @@ Description: ${videoDetails.description.substring(0, 800)}
 
 Question: "${question}"
 
-Answer helpfully. If the question mentions a timestamp or time range, acknowledge it and answer based on what that section likely covers given the video title and description. Use **bold** for key terms.`;
+Answer helpfully. Use **bold** for key terms.`;
     }
     
-    const result = await callGemini(prompt);
+    const result = await callGeminiProxy(prompt);
     output.innerHTML = formatOutput(result);
     document.getElementById('questionInput').value = '';
 }
 
-// ===== GENERATE QUIZ =====
 async function generateQuiz() {
     if (!currentVideoId) { showToast('No video loaded'); return; }
     
@@ -345,23 +302,20 @@ D) option
 **Answer:** letter`;
     }
     
-    const result = await callGemini(prompt);
+    const result = await callGeminiProxy(prompt);
     output.innerHTML = formatOutput(result);
 }
 
-// ===== SAVE SUMMARY (Manual) =====
 function saveSummary() {
     const summaryText = document.getElementById('summaryOutput').innerText;
     if (!summaryText || summaryText.includes('Getting') || summaryText.includes('Analyzing') || summaryText.includes('Generating')) {
         showToast('Generate a summary first');
         return;
     }
-    
     autoSaveSummary(summaryText, currentVideoId, currentVideoTitle);
     showToast('💾 Saved to library');
 }
 
-// ===== FORMAT OUTPUT =====
 function formatOutput(text) {
     if (!text || text.includes('⚠️')) {
         return `<div class="error">${text || 'Error'}</div>`;
@@ -377,7 +331,6 @@ function formatOutput(text) {
     return `<div class="formatted">${html}</div>`;
 }
 
-// ===== TIMESTAMP JUMP =====
 function jumpToTimestamp(timeString) {
     const parts = timeString.split(':');
     let seconds = parts.length === 2 ? parseInt(parts[0])*60 + parseInt(parts[1]) : parseInt(parts[0])*3600 + parseInt(parts[1])*60 + parseInt(parts[2]);
@@ -389,7 +342,6 @@ function jumpToTimestamp(timeString) {
     }
 }
 
-// ===== UTILITIES =====
 function copyVideoLink() {
     if (currentVideoId) {
         navigator.clipboard.writeText(`https://www.youtube.com/watch?v=${currentVideoId}`);
