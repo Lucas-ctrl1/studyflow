@@ -1,5 +1,5 @@
 // ===== COMPLETE PLAYER.JS - WITH DARK MODE =====
-const GEMINI_API_KEY = 'AIzaSyC8oS6Hqx537nANhWKkGNXnCeFlHSv01kM';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const MODEL_NAME = 'models/gemini-2.5-flash-lite';
 
 let currentVideoId = '';
